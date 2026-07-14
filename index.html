@@ -59,7 +59,7 @@
 <div class="status" id="status">● 黑方落子</div>
 
 <div class="board-wrap">
-  <canvas id="board" width="730" height="730"></canvas>
+  <canvas id="board" width="760" height="760"></canvas>
 </div>
 
 <div class="btn-row">
@@ -69,9 +69,9 @@
 
 <script>
 const SIZE = 15;
-const CELL = 46;
-const MARGIN = 26;
-const RADIUS = 18;
+const CELL = 50;
+const MARGIN = 28;
+const RADIUS = 20;
 
 const canvas = document.getElementById('board');
 const ctx = canvas.getContext('2d');
@@ -125,7 +125,7 @@ function drawBoard() {
 
   // 每个交叉点的编号
   ctx.fillStyle = '#8b7355';
-  ctx.font = 'bold 12px "Microsoft YaHei", sans-serif';
+  ctx.font = 'bold 15px "Microsoft YaHei", sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   for (let r = 0; r < SIZE; r++) {
