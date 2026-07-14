@@ -63,10 +63,10 @@
 
 <script>
 const SIZE = 15;
-const GAP = 6;
-const CIR = 21;
+const GAP = 10;
+const CIR = 28;
 const CELL = CIR * 2 + GAP;
-const MARGIN = 8;
+const MARGIN = 12;
 const CANVAS = MARGIN * 2 + CELL * SIZE - GAP;
 
 const canvas = document.getElementById('board');
@@ -119,7 +119,7 @@ function drawBoard() {
 
         // 数字
         ctx.fillStyle = '#555';
-        ctx.font = 'bold 16px "SimHei", "黑体", sans-serif';
+        ctx.font = 'bold 21px "SimHei", "黑体", sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(num, x, y);
