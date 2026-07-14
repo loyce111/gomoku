@@ -95,9 +95,30 @@ function getPos(row, col) {
 function drawBoard() {
   ctx.clearRect(0, 0, CANVAS, CANVAS);
 
-  // 背景
+  // 木板纹理背景
   ctx.fillStyle = '#d4a754';
   ctx.fillRect(0, 0, CANVAS, CANVAS);
+
+  // 木纹
+  ctx.globalAlpha = 0.15;
+  for (let i = 0; i < CANVAS; i += 3) {
+    ctx.strokeStyle = i % 6 < 3 ? '#b8923a' : '#e0c070';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(0, i + Math.sin(i * 0.02) * 2);
+    ctx.lineTo(CANVAS, i + Math.sin(i * 0.02 + 1) * 2);
+    ctx.stroke();
+  }
+  // 竖纹
+  for (let i = 0; i < CANVAS; i += 8) {
+    ctx.strokeStyle = 'rgba(139,100,40,0.08)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(i + Math.sin(i * 0.03) * 3, 0);
+    ctx.lineTo(i + Math.sin(i * 0.03 + 1) * 3, CANVAS);
+    ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
 
   // 画每个圆形序号
   for (let r = 0; r < SIZE; r++) {
