@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>五子棋 - 格子编号版</title>
+<title>五子棋 - 圆形序号版</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
@@ -12,54 +12,48 @@
     align-items: center;
     justify-content: center;
     min-height: 100vh;
-    background: #2c2416;
+    background: #1a1a2e;
     font-family: 'SimHei', '黑体', 'Microsoft YaHei', sans-serif;
-    color: #e8d5b7;
+    color: #eee;
     padding: 20px;
   }
-  h1 { margin-bottom: 8px; font-size: 28px; letter-spacing: 4px; }
-  .info { margin-bottom: 16px; font-size: 14px; color: #b8a58a; }
+  h1 { margin-bottom: 4px; font-size: 28px; letter-spacing: 4px; }
+  .info { margin-bottom: 14px; font-size: 14px; color: #999; }
   .status {
-    font-size: 20px;
-    margin-bottom: 10px;
-    padding: 6px 24px;
-    background: #3d3222;
+    font-size: 22px;
+    margin-bottom: 12px;
+    padding: 8px 28px;
+    background: #16213e;
     border-radius: 20px;
     letter-spacing: 2px;
   }
   .board-wrap {
-    position: relative;
-    background: #d4a754;
-    border-radius: 8px;
-    padding: 20px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    background: #f5f0e8;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5);
   }
-  canvas { display: block; cursor: pointer; border-radius: 4px; }
+  canvas { display: block; cursor: pointer; }
   .btn-row { margin-top: 16px; display: flex; gap: 12px; }
   button {
-    padding: 10px 28px;
-    font-size: 16px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    letter-spacing: 2px;
-    font-weight: bold;
-    transition: all 0.2s;
+    padding: 10px 28px; font-size: 16px; border: none;
+    border-radius: 6px; cursor: pointer; letter-spacing: 2px;
+    font-weight: bold; transition: all 0.2s;
   }
-  .btn-restart { background: #8b7355; color: #fff; }
-  .btn-restart:hover { background: #a0845c; }
-  .btn-undo { background: #5a4a3a; color: #fff; }
-  .btn-undo:hover { background: #6e5c4a; }
+  .btn-restart { background: #e94560; color: #fff; }
+  .btn-restart:hover { background: #ff6b81; }
+  .btn-undo { background: #0f3460; color: #fff; }
+  .btn-undo:hover { background: #1a508b; }
 </style>
 </head>
 <body>
 
 <h1>五 子 棋</h1>
-<div class="info">每个交叉点标有编号 1 ~ 225（从左上到右下）</div>
+<div class="info">圆形序号 1 ~ 225 · 点击落子</div>
 <div class="status" id="status">● 黑方落子</div>
 
 <div class="board-wrap">
-  <canvas id="board" width="880" height="880"></canvas>
+  <canvas id="board"></canvas>
 </div>
 
 <div class="btn-row">
@@ -69,11 +63,15 @@
 
 <script>
 const SIZE = 15;
-const CELL = 58;
-const MARGIN = 32;
-const RADIUS = 22;
+const GAP = 6;
+const CIR = 21;
+const CELL = CIR * 2 + GAP;
+const MARGIN = 8;
+const CANVAS = MARGIN * 2 + CELL * SIZE - GAP;
 
 const canvas = document.getElementById('board');
+canvas.width = CANVAS;
+canvas.height = CANVAS;
 const ctx = canvas.getContext('2d');
 const statusEl = document.getElementById('status');
 
@@ -82,118 +80,90 @@ let blackTurn = true;
 let gameOver = false;
 let history = [];
 
-// 编号到行列的映射：编号1在左上角(H8天元位置=113)
-// 左上(0,0) = 1号, 右下(14,14) = 225号
 function cellToNum(row, col) {
   return row * SIZE + col + 1;
 }
 
-function numToCell(num) {
-  return { row: Math.floor((num - 1) / SIZE), col: (num - 1) % SIZE };
+function getPos(row, col) {
+  return {
+    x: MARGIN + col * CELL + CIR,
+    y: MARGIN + row * CELL + CIR
+  };
 }
 
 function drawBoard() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.clearRect(0, 0, CANVAS, CANVAS);
 
-  // 棋盘背景
-  ctx.fillStyle = '#d4a754';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  // 背景
+  ctx.fillStyle = '#f5f0e8';
+  ctx.fillRect(0, 0, CANVAS, CANVAS);
 
-  // 网格线
-  ctx.strokeStyle = '#3a2a0a';
-  ctx.lineWidth = 1;
-  for (let i = 0; i < SIZE; i++) {
-    const pos = MARGIN + i * CELL;
-    ctx.beginPath();
-    ctx.moveTo(MARGIN, pos);
-    ctx.lineTo(MARGIN + (SIZE - 1) * CELL, pos);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(pos, MARGIN);
-    ctx.lineTo(pos, MARGIN + (SIZE - 1) * CELL);
-    ctx.stroke();
-  }
-
-  // 星位
-  const stars = [[3,3],[3,7],[3,11],[7,3],[7,7],[7,11],[11,3],[11,7],[11,11]];
-  ctx.fillStyle = '#3a2a0a';
-  for (const [r, c] of stars) {
-    ctx.beginPath();
-    ctx.arc(MARGIN + c * CELL, MARGIN + r * CELL, 4, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  // 每个交叉点的编号 - 白色圆角标签
+  // 画每个圆形序号
   for (let r = 0; r < SIZE; r++) {
     for (let c = 0; c < SIZE; c++) {
-      if (grid[r][c] !== null) continue;
+      const { x, y } = getPos(r, c);
       const num = cellToNum(r, c);
-      if (num > SIZE * SIZE) continue;
-      const x = MARGIN + c * CELL;
-      const y = MARGIN + r * CELL;
 
-      // 白色圆角矩形背景
-      const w = num < 100 ? 28 : 34;
-      const h = 20;
-      ctx.fillStyle = '#ffffff';
-      ctx.beginPath();
-      ctx.roundRect(x - w/2, y - h/2, w, h, 5);
-      ctx.fill();
+      if (grid[r][c] === null) {
+        // 空位 - 浅灰色圆形背景 + 数字
+        ctx.fillStyle = '#e8e2d5';
+        ctx.beginPath();
+        ctx.arc(x, y, CIR, 0, Math.PI * 2);
+        ctx.fill();
 
-      // 深色粗体数字
-      ctx.fillStyle = '#111111';
-      ctx.font = 'bold 14px "SimHei", "黑体", "Microsoft YaHei", sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(num, x, y);
-    }
-  }
-  // 棋子
-  for (let r = 0; r < SIZE; r++) {
-    for (let c = 0; c < SIZE; c++) {
-      if (grid[r][c] === null) continue;
-      const x = MARGIN + c * CELL;
-      const y = MARGIN + r * CELL;
+        ctx.strokeStyle = '#c5bfb0';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(x, y, CIR, 0, Math.PI * 2);
+        ctx.stroke();
 
-      // 阴影
-      ctx.fillStyle = 'rgba(0,0,0,0.25)';
-      ctx.beginPath();
-      ctx.arc(x + 1.5, y + 1.5, RADIUS, 0, Math.PI * 2);
-      ctx.fill();
-
-      // 棋子本体
-      const grad = ctx.createRadialGradient(x - 5, y - 5, 2, x, y, RADIUS);
-      if (grid[r][c] === 'black') {
+        // 数字
+        ctx.fillStyle = '#555';
+        ctx.font = 'bold 16px "SimHei", "黑体", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(num, x, y);
+      } else if (grid[r][c] === 'black') {
+        // 黑子
+        const grad = ctx.createRadialGradient(x - 4, y - 4, 3, x, y, CIR);
         grad.addColorStop(0, '#555');
         grad.addColorStop(1, '#111');
-      } else {
-        grad.addColorStop(0, '#fff');
-        grad.addColorStop(1, '#ccc');
-      }
-      ctx.fillStyle = grad;
-      ctx.beginPath();
-      ctx.arc(x, y, RADIUS, 0, Math.PI * 2);
-      ctx.fill();
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(x, y, CIR, 0, Math.PI * 2);
+        ctx.fill();
 
-      // 高光
-      ctx.fillStyle = grid[r][c] === 'black'
-        ? 'rgba(255,255,255,0.15)'
-        : 'rgba(255,255,255,0.5)';
-      ctx.beginPath();
-      ctx.arc(x - 4, y - 4, RADIUS * 0.35, 0, Math.PI * 2);
-      ctx.fill();
+        ctx.fillStyle = 'rgba(255,255,255,0.12)';
+        ctx.beginPath();
+        ctx.arc(x - 5, y - 5, CIR * 0.3, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        // 白子
+        const grad = ctx.createRadialGradient(x - 4, y - 4, 3, x, y, CIR);
+        grad.addColorStop(0, '#fff');
+        grad.addColorStop(1, '#d8d8d8');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(x, y, CIR, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = '#bbb';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(x, y, CIR - 1, 0, Math.PI * 2);
+        ctx.stroke();
+      }
     }
   }
 
-  // 最后落子标记
+  // 最后落子红圈标记
   if (history.length > 0) {
     const last = history[history.length - 1];
-    const x = MARGIN + last.col * CELL;
-    const y = MARGIN + last.row * CELL;
+    const { x, y } = getPos(last.row, last.col);
     ctx.strokeStyle = '#ff4444';
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 2.5;
     ctx.beginPath();
-    ctx.arc(x, y, RADIUS - 3, 0, Math.PI * 2);
+    ctx.arc(x, y, CIR - 2, 0, Math.PI * 2);
     ctx.stroke();
   }
 }
@@ -202,42 +172,45 @@ canvas.addEventListener('click', (e) => {
   if (gameOver) return;
 
   const rect = canvas.getBoundingClientRect();
-  const scaleX = canvas.width / rect.width;
-  const scaleY = canvas.height / rect.height;
+  const scaleX = CANVAS / rect.width;
+  const scaleY = CANVAS / rect.height;
   const mx = (e.clientX - rect.left) * scaleX;
   const my = (e.clientY - rect.top) * scaleY;
 
-  const col = Math.round((mx - MARGIN) / CELL);
-  const row = Math.round((my - MARGIN) / CELL);
+  // 找到最近的圆
+  let bestDist = Infinity;
+  let bestRow = -1, bestCol = -1;
+  for (let r = 0; r < SIZE; r++) {
+    for (let c = 0; c < SIZE; c++) {
+      const { x, y } = getPos(r, c);
+      const d = Math.sqrt((mx - x) ** 2 + (my - y) ** 2);
+      if (d < bestDist) {
+        bestDist = d;
+        bestRow = r;
+        bestCol = c;
+      }
+    }
+  }
 
-  if (row < 0 || row >= SIZE || col < 0 || col >= SIZE) return;
-
-  // 检查是否点在了交叉点附近
-  const cx = MARGIN + col * CELL;
-  const cy = MARGIN + row * CELL;
-  const dist = Math.sqrt((mx - cx) ** 2 + (my - cy) ** 2);
-  if (dist > RADIUS + 3) return;
-
-  if (grid[row][col] !== null) return;
+  if (bestDist > CIR + 5) return;
+  if (grid[bestRow][bestCol] !== null) return;
 
   const color = blackTurn ? 'black' : 'white';
-  grid[row][col] = color;
-  history.push({ row, col, color });
+  grid[bestRow][bestCol] = color;
+  history.push({ row: bestRow, col: bestCol, color });
 
-  if (checkWin(row, col, color)) {
+  if (checkWin(bestRow, bestCol, color)) {
     gameOver = true;
     statusEl.textContent = (color === 'black' ? '● 黑方' : '○ 白方') + ' 胜利！🎉';
     drawBoard();
     return;
   }
-
   if (history.length === SIZE * SIZE) {
     gameOver = true;
     statusEl.textContent = '平局！';
     drawBoard();
     return;
   }
-
   blackTurn = !blackTurn;
   statusEl.textContent = blackTurn ? '● 黑方落子' : '○ 白方落子';
   drawBoard();
@@ -261,7 +234,7 @@ function checkWin(row, col, color) {
 }
 
 function undo() {
-  if (gameOver) { gameOver = false; }
+  if (gameOver) gameOver = false;
   if (history.length === 0) return;
   const last = history.pop();
   grid[last.row][last.col] = null;
