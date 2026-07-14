@@ -29,7 +29,7 @@
     color: #333;
   }
   .board-wrap {
-    background: #f5f0e8;
+    background: #8B7355;
     border-radius: 12px;
     padding: 24px;
     box-shadow: 0 8px 40px rgba(0,0,0,0.5);
@@ -96,7 +96,7 @@ function drawBoard() {
   ctx.clearRect(0, 0, CANVAS, CANVAS);
 
   // 背景
-  ctx.fillStyle = '#f5f0e8';
+  ctx.fillStyle = '#8B7355';
   ctx.fillRect(0, 0, CANVAS, CANVAS);
 
   // 画每个圆形序号
@@ -106,20 +106,20 @@ function drawBoard() {
       const num = cellToNum(r, c);
 
       if (grid[r][c] === null) {
-        // 空位 - 浅灰色圆形背景 + 数字
-        ctx.fillStyle = '#e8e2d5';
+        // 空位 - 米白色圆形 + 数字
+        ctx.fillStyle = '#f5f0e0';
         ctx.beginPath();
         ctx.arc(x, y, CIR, 0, Math.PI * 2);
         ctx.fill();
 
-        ctx.strokeStyle = '#c5bfb0';
+        ctx.strokeStyle = '#c5b898';
         ctx.lineWidth = 1.5;
         ctx.beginPath();
         ctx.arc(x, y, CIR, 0, Math.PI * 2);
         ctx.stroke();
 
         // 数字
-        ctx.fillStyle = '#555';
+        ctx.fillStyle = '#3a2a0a';
         ctx.font = 'bold 21px "SimHei", "黑体", sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
