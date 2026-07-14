@@ -59,7 +59,7 @@
 <div class="status" id="status">● 黑方落子</div>
 
 <div class="board-wrap">
-  <canvas id="board" width="850" height="850"></canvas>
+  <canvas id="board" width="880" height="880"></canvas>
 </div>
 
 <div class="btn-row">
@@ -69,8 +69,8 @@
 
 <script>
 const SIZE = 15;
-const CELL = 56;
-const MARGIN = 30;
+const CELL = 58;
+const MARGIN = 32;
 const RADIUS = 22;
 
 const canvas = document.getElementById('board');
@@ -123,12 +123,7 @@ function drawBoard() {
     ctx.fill();
   }
 
-  // 每个交叉点的编号
-  // 先画白色底色，让数字更清晰
-  ctx.fillStyle = 'rgba(255,255,255,0.75)';
-  ctx.font = 'bold 20px "SimHei", "黑体", "Microsoft YaHei", sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
+  // 每个交叉点的编号 - 白色圆角标签
   for (let r = 0; r < SIZE; r++) {
     for (let c = 0; c < SIZE; c++) {
       if (grid[r][c] !== null) continue;
@@ -136,18 +131,20 @@ function drawBoard() {
       if (num > SIZE * SIZE) continue;
       const x = MARGIN + c * CELL;
       const y = MARGIN + r * CELL;
-      ctx.fillText(num, x + 0.5, y + 0.5);
-    }
-  }
-  // 再画深色数字（偏移叠加，形成描边效果）
-  ctx.fillStyle = '#1a1a1a';
-  for (let r = 0; r < SIZE; r++) {
-    for (let c = 0; c < SIZE; c++) {
-      if (grid[r][c] !== null) continue;
-      const num = cellToNum(r, c);
-      if (num > SIZE * SIZE) continue;
-      const x = MARGIN + c * CELL;
-      const y = MARGIN + r * CELL;
+
+      // 白色圆角矩形背景
+      const w = num < 100 ? 28 : 34;
+      const h = 20;
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.roundRect(x - w/2, y - h/2, w, h, 5);
+      ctx.fill();
+
+      // 深色粗体数字
+      ctx.fillStyle = '#111111';
+      ctx.font = 'bold 14px "SimHei", "黑体", "Microsoft YaHei", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
       ctx.fillText(num, x, y);
     }
   }
